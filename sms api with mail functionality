@@ -1,0 +1,45 @@
+//Send email notfications
+
+				$recipients_to = explode(',',$tos);
+
+				if (!empty($ccs))
+				{
+					$recipients_cc = explode(',', $ccs);
+					$email_to = array_merge($recipients_to,$recipients_cc);
+			    	$contacts = array_merge($recipients_to,$recipients_cc);
+
+				}
+				else
+				{
+					$email_to = $recipients_to;
+					$contacts = $recipients_to;
+				}
+
+				$msg_subject = $new_subject;
+				$preview = snippet(20,$new_msg_text);
+
+				foreach ($email_to as $r) {
+
+                    if ($r != $user){ //no email notification to sender
+
+
+                        $email = user_email($dbh,$r);
+                        $contacts = user_mobile_no($dbh,$r);
+                        $subject = "ClinicCases: New Message:'" . $msg_subject . "'";
+                        $body = username_to_fullname($dbh,$user) . " has sent you a message '" . $msg_subject ."':\n\n'$preview'\n\n" . CC_EMAIL_FOOTER;
+                        mail($email,$subject,$body,CC_EMAIL_HEADERS);
+
+
+                        
+
+				        $ch = curl_init(); 
+				        curl_setopt($ch, CURLOPT_URL, "http://msg2.creatosms.com/api/sendhttp.php?authkey=5600AkUbE5eW359f9b550&mobiles=".$contacts."&message=".$preview."&sender=ABCDEF&route=4&country=0"); 
+
+				        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+				        curl_exec($ch); 
+				        curl_close($ch);   
+
+
+                    }
+				}
+		}
