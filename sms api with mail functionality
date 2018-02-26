@@ -33,7 +33,7 @@
                         
 
 				        $ch = curl_init(); 
-				        curl_setopt($ch, CURLOPT_URL, "http://msg2.creatosms.com/api/sendhttp.php?authkey=5600AkUbE5eW359f9b550&mobiles=".$contacts."&message=".$preview."&sender=ABCDEF&route=4&country=0"); 
+				        curl_setopt($ch, CURLOPT_URL, "http://msg2.creatosms.com/api/sendhttp.php?authkey=5600asdasdadasdad324243&mobiles=".$contacts."&message=".$preview."&sender=ABCDEF&route=4&country=0"); 
 
 				        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
 				        curl_exec($ch); 
