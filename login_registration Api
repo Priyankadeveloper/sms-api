@@ -9,11 +9,12 @@
 		switch($_GET['apicall']){
 			
 			case 'signup':
-				if(isTheseParametersAvailable(array('name','email','password','lastname'))){
+				if(isTheseParametersAvailable(array('name','email','password','lastname','mobile'))){
 					$username = $_POST['name']; 
 					$email = $_POST['email']; 
 					$password = md5($_POST['password']);
 					$lastname = $_POST['lastname']; 
+					$mobile =$_POST['mobile'];
 					
 					$stmt = $conn->prepare("SELECT id FROM users WHERE name = ? OR email = ?");
 					$stmt->bind_param("ss", $username, $email);
@@ -25,8 +26,8 @@
 						$response['message'] = 'User already registered';
 						$stmt->close();
 					}else{
-						$stmt = $conn->prepare("INSERT INTO users (name, email, password, lastname) VALUES (?, ?, ?, ?)");
-						$stmt->bind_param("ssss", $username, $email, $password, $lastname);
+						$stmt = $conn->prepare("INSERT INTO users (name, email, password, lastname,mobile) VALUES (?, ?, ?, ?, ?)");
+						$stmt->bind_param("sssss", $username, $email, $password, $lastname, $mobile);
 
 						if($stmt->execute()){
 							$stmt = $conn->prepare("SELECT id, id, name, email, lastname FROM users WHERE name = ?"); 
@@ -39,7 +40,8 @@
 								'id'=>$id, 
 								'name'=>$username, 
 								'email'=>$email,
-								'lastname'=>$lastname
+								'lastname'=>$lastname,
+								'mobile'=>$mobile
 							);
 							
 							$stmt->close();
@@ -63,12 +65,12 @@
 					
 					$email = $_POST['email'];
 					$password = md5($_POST['password']); 
-/*    				$mobile = $_POST['mobile'];
-*/    								
+    				//$mobile = $_POST['mobile'];
+    								
 					
-					$stmt = $conn->prepare("SELECT id, name, email, lastname FROM users WHERE  email=?  AND password = ?");
-					$stmt->bind_param("ss",$email, $password);
-					
+					$stmt = $conn->prepare("SELECT id, name, email, lastname FROM users WHERE email=? OR mobile= ? AND password = ?");
+					$stmt->bind_param("sss",$email, $email, $password);
+										
 					$stmt->execute();
 					
 					$stmt->store_result();
