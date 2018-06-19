@@ -1,0 +1,144 @@
+<?php 
+
+	require_once 'DbConnect.php';
+	
+	$response = array();
+	
+	if(isset($_GET['apicall'])){
+		
+		switch($_GET['apicall']){
+			
+			case 'signup':
+				if(isTheseParametersAvailable(array('name','email','password','lastname'))){
+					$username = $_POST['name']; 
+					$email = $_POST['email']; 
+					$password = md5($_POST['password']);
+					$lastname = $_POST['lastname']; 
+					
+					$stmt = $conn->prepare("SELECT id FROM users WHERE name = ? OR email = ?");
+					$stmt->bind_param("ss", $username, $email);
+					$stmt->execute();
+					$stmt->store_result();
+					
+					if($stmt->num_rows > 0){
+						$response['error'] = true;
+						$response['message'] = 'User already registered';
+						$stmt->close();
+					}else{
+						$stmt = $conn->prepare("INSERT INTO users (name, email, password, lastname) VALUES (?, ?, ?, ?)");
+						$stmt->bind_param("ssss", $username, $email, $password, $lastname);
+
+						if($stmt->execute()){
+							$stmt = $conn->prepare("SELECT id, id, name, email, lastname FROM users WHERE name = ?"); 
+							$stmt->bind_param("s",$username);
+							$stmt->execute();
+							$stmt->bind_result($userid, $id, $username, $email, $lastname);
+							$stmt->fetch();
+							
+							$user = array(
+								'id'=>$id, 
+								'name'=>$username, 
+								'email'=>$email,
+								'lastname'=>$lastname
+							);
+							
+							$stmt->close();
+							
+							$response['error'] = false; 
+							$response['message'] = 'User registered successfully'; 
+							$response['user'] = $user; 
+						}
+					}
+					
+				}else{
+					$response['error'] = true; 
+					$response['message'] = 'required parameters are not available'; 
+				}
+				
+			break; 
+			
+			case 'login':
+				
+				if(isTheseParametersAvailable(array('email', 'password'))){
+					
+					$email = $_POST['email'];
+					$password = md5($_POST['password']); 
+/*    				$mobile = $_POST['mobile'];
+*/    								
+					
+					$stmt = $conn->prepare("SELECT id, name, email, lastname FROM users WHERE  email=?  AND password = ?");
+					$stmt->bind_param("ss",$email, $password);
+					
+					$stmt->execute();
+					
+					$stmt->store_result();
+					
+					if($stmt->num_rows > 0){
+						
+						$stmt->bind_result($id, $username, $email, $lastname);
+						$stmt->fetch();
+						
+						$user = array(
+							'id'=>$id, 
+							'email'=>$email,
+							'username'=>$username,
+							'lastname'=>$lastname
+							/*'mobile'=>$mobile*/
+						);
+						
+						$response['error'] = false; 
+						$response['message'] = 'Login successfull'; 
+						$response['user'] = $user; 
+					}else{
+						$response['error'] = false; 
+						$response['message'] = 'Invalid username or password';
+					}
+				}
+			break; 
+			
+			default: 
+				$response['error'] = true; 
+				$response['message'] = 'Invalid Operation Called';
+		}
+		
+	}else{
+		$response['error'] = true; 
+		$response['message'] = 'Invalid API Call';
+	}
+	
+	echo json_encode($response);
+	
+	function isTheseParametersAvailable($params){
+		
+		foreach($params as $param){
+			if(!isset($_POST[$param])){
+				return false; 
+			}
+		}
+		return true; 
+	}
+  ----------------------------------
+  
+  	require_once 'DbConnect.php';
+
+  <?php
+//these are the server details
+//the username is root by default in case of xampp
+//password is nothing by default
+//and lastly we have the database named android. if your database name is different you have to change it 
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "user";
+ 
+ 
+//creating a new connection object using mysqli 
+$conn = new mysqli($servername, $username, $password, $database);
+ 
+//if there is some error connecting to the database
+//with die we will stop the further execution by displaying a message causing the error 
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+  
