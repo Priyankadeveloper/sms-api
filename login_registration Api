@@ -29,8 +29,8 @@
    $to    = $row_post['email'];
    $subject = "Your Recovered Password";
    $message = "Please use this password to login  ". $password;
-    $headers = 'From: adarshpavaiyadecent@gmail.com' . "\r\n" .
-    'Reply-To: adarshpavaiyadecent@gmail.com' . "\r\n" .
+    $headers = 'From: xxxxxx@gmail.com' . "\r\n" .
+    'Reply-To: xxxxxxx@gmail.com' . "\r\n" .
     'X-Mailer: PHP/' . phpversion();
 	$response['error'] = false; 
 	$response['message'] = 'Password Send To Your Mail ID';
