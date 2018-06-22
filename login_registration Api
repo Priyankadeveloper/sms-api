@@ -7,25 +7,140 @@
 	if(isset($_GET['apicall'])){
 		
 		switch($_GET['apicall']){
+
+
+			// Forget Password
+   case 'forget_password':	
+
+   if(isTheseParametersAvailable(array('email'))){
+
+   	$email=$_POST['email'];
+
+   	$select_query = "SELECT id,email,password FROM users";
+		$run_select_query = mysqli_query($conn,$select_query); 
+		while ($row_post=mysqli_fetch_assoc($run_select_query)){
+
+		$user_id = $row_post['id']; 
+		
+		//$to = $row_post['email'];
+		 $password = $row_post['password']; 
+
+
+   $to    = $row_post['email'];
+   $subject = "Your Recovered Password";
+   $message = "Please use this password to login  ". $password;
+    $headers = 'From: adarshpavaiyadecent@gmail.com' . "\r\n" .
+    'Reply-To: adarshpavaiyadecent@gmail.com' . "\r\n" .
+    'X-Mailer: PHP/' . phpversion();
+	$response['error'] = false; 
+	$response['message'] = 'Password Send To Your Mail ID';
+    mail($to, $subject, $message, $headers);
+   
+   
+		}
+
+		}
+
+			break;
+			// Forget Password
+
+	case 'change_password':
+
+		if(isTheseParametersAvailable(array('password','cpassword'))){
+
+		$password = md5($_POST['password']);
+		$confpassword = md5($_POST['cpassword']);
+		if($password == $confpassword){
+		$response['error'] = true; 
+		$response['message'] = 'password are same'; 
+		}
+		else
+		{ 
+    /* $smtp=$conn->prepare("SELECT id FROM users WHERE password = ?");
+     $smtp->bind_param("s", $password);
+     $smtp->execute();
+					$$smtp->store_result();
+					
+										
+					if($smtp->num_rows > 0){
+						$response['error'] = true;
+						$response['message'] = 'User already registered';
+						$smtp->close();*/
+		$select_query = "SELECT id,password FROM users";
+		$run_select_query = mysqli_query($conn,$select_query); 
+		while ($row_post=mysqli_fetch_array($run_select_query)){
+
+		$user_id = $row_post['id']; 
+		$pass = $row_post['password'];
+
+		}
+
+             //echo $user_id;
+	    if($pass==$password){
+	        
+
+	         $update_posts = "UPDATE users SET password='$password',password = '$confpassword' WHERE id='$user_id'";  
+	        $run_update = mysqli_query($conn,$update_posts);
+	        $response['error'] = False; 
+		    $response['message'] = 'password changed successfully'; 
+		    }
+
+		    else{
+		    	
+		    	$response['error'] = true; 
+		        $response['message'] = 'Previous Password not matched'; 
+		    }
+		}
+	
+       					
+				  //  }
+
+       /* $run_select_query = mysqli_query($conn,$select_query); 
+        while ($row_post=mysqli_fetch_array($run_select_query)){
+
+             $user_id = $row_post['id']; 
+
+             echo $user_id;
+
+        }*/
+
+                   
+
+
+				}
+
+
+						break;
+
 			
 			case 'signup':
 				if(isTheseParametersAvailable(array('name','email','password','lastname','mobile'))){
+
 					$username = $_POST['name']; 
 					$email = $_POST['email']; 
 					$password = md5($_POST['password']);
 					$lastname = $_POST['lastname']; 
 					$mobile =$_POST['mobile'];
 					
+					
 					$stmt = $conn->prepare("SELECT id FROM users WHERE name = ? OR email = ?");
 					$stmt->bind_param("ss", $username, $email);
 					$stmt->execute();
 					$stmt->store_result();
 					
+										
 					if($stmt->num_rows > 0){
 						$response['error'] = true;
 						$response['message'] = 'User already registered';
 						$stmt->close();
-					}else{
+					
+				    }
+				    else{
+				    	if(empty($email)||empty($name)||empty($password)||empty($lastname)||empty($mobile))
+					{
+						$response['error'] = True; 
+						$response['message'] = 'required parameters are not available please fill the deatils';
+					}
 						$stmt = $conn->prepare("INSERT INTO users (name, email, password, lastname,mobile) VALUES (?, ?, ?, ?, ?)");
 						$stmt->bind_param("sssss", $username, $email, $password, $lastname, $mobile);
 
@@ -52,7 +167,9 @@
 						}
 					}
 					
-				}else{
+				}
+
+				else{
 					$response['error'] = true; 
 					$response['message'] = 'required parameters are not available'; 
 				}
@@ -61,41 +178,65 @@
 			
 			case 'login':
 				
-				if(isTheseParametersAvailable(array('email', 'password'))){
-					
+			if(isTheseParametersAvailable(array('email', 'password'))){
+		
 					$email = $_POST['email'];
-					$password = md5($_POST['password']); 
+					$password = (md5($_POST['password'])); 
+					//$password_forget=$_POST['password'];
     				//$mobile = $_POST['mobile'];
-    								
-					
-					$stmt = $conn->prepare("SELECT id, name, email, lastname FROM users WHERE email=? OR mobile= ? AND password = ?");
-					$stmt->bind_param("sss",$email, $email, $password);
+    			
+			/*	if(md5($_POST['password'])){*/
+					$stmt = $conn->prepare("SELECT id, name, email, lastname, mobile FROM users WHERE email =? AND password = ?");
+					$stmt->bind_param("ss",$email, $password);
 										
 					$stmt->execute();
 					
 					$stmt->store_result();
-					
+				 
 					if($stmt->num_rows > 0){
 						
-						$stmt->bind_result($id, $username, $email, $lastname);
+						$stmt->bind_result($id, $username, $email, $lastname,$mobile);
 						$stmt->fetch();
 						
 						$user = array(
 							'id'=>$id, 
 							'email'=>$email,
 							'username'=>$username,
-							'lastname'=>$lastname
-							/*'mobile'=>$mobile*/
+							'lastname'=>$lastname,
+							'mobile'=>$mobile
 						);
+					   
+					        
 						
 						$response['error'] = false; 
 						$response['message'] = 'Login successfull'; 
-						$response['user'] = $user; 
-					}else{
-						$response['error'] = false; 
+						$response['user'] = $user;
+						
+					    }
+				
+			/*	}	*/     
+			            $select_query = "SELECT password FROM users where password='".$_POST['password']."'";
+					   	$run_select_query = mysqli_query($conn,$select_query); 
+	            	    $row_post=mysqli_fetch_assoc($run_select_query);
+					    
+					    
+					   if($row_post){
+					        
+					     $response['error'] = false; 
+					    $response['message'] = 'Login successfull'; 
+					        
+					    }
+					    
+			
+					
+					else{
+						$response['error'] = true; 
 						$response['message'] = 'Invalid username or password';
 					}
-				}
+				 
+				
+		
+			}
 			break; 
 			
 			default: 
@@ -119,6 +260,7 @@
 		}
 		return true; 
 	}
+
   ----------------------------------
   
   	require_once 'DbConnect.php';
