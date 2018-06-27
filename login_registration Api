@@ -9,6 +9,51 @@ header("Content-Type:application/json");
 	if(isset($_GET['apicall'])){
 		
 		switch($_GET['apicall']){
+		
+		case 'forget_password':	
+
+   if(isTheseParametersAvailable(array('email'))){
+
+   	$email=$_POST['email'];
+
+   	$select_query = "SELECT id,email,password FROM users where email='$email'";
+		$run_select_query = mysqli_query($conn,$select_query); 
+		while ($row_post=mysqli_fetch_assoc($run_select_query)){
+
+		$user_id = $row_post['id']; 
+		
+		//$to = $row_post['email'];
+		 $password = $row_post['password']; 
+		
+		    
+	
+
+
+   $to    = $email;
+   $subject = "Your Recovered Password";
+   $message = "Please use this password to login  ". $password;
+    $headers = 'From: adarshpavaiyadecent@gmail.com' . "\r\n" .
+    'Reply-To: adarshpavaiyadecent@gmail.com' . "\r\n" .
+    'X-Mailer: PHP/' . phpversion();
+	$response['error'] = false; 
+	$response['message'] = 'Password Send To Your Mail ID';
+    mail($to, $subject, $message, $headers);
+   
+   
+		}
+		$response['error'] = true; 
+		$response['message'] = 'Email not matched!'; 
+
+		}
+		else{
+	    $response['error'] = true; 
+		$response['message'] = 'Parameter Required';
+		    
+		}
+
+			break;
+			// Forget Password
+
 
 	  case 'update_profile':
 		if(isTheseParametersAvailable(array('user_name','gender','profile_pic','user_gallery','real_name','tag_format','country','state','city','description','dob','email'))){
@@ -497,4 +542,12 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 ?>
+-------------
+http://localhost/event_application/Api.php?apicall=login
+http://localhost/event_application/Api.php?apicall=signup
+http://localhost/event_application/Api.php?apicall=change_password
+http://localhost/event_application/Api.php?apicall=update_profile
+http://localhost/event_application/Api.php?apicall=profile
+-------------
+
   
