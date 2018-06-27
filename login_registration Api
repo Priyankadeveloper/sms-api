@@ -548,6 +548,7 @@ http://localhost/event_application/Api.php?apicall=signup
 http://localhost/event_application/Api.php?apicall=change_password
 http://localhost/event_application/Api.php?apicall=update_profile
 http://localhost/event_application/Api.php?apicall=profile
+http://localhost/event_application/Api.php?apicall=forget_password
 -------------
 
   
