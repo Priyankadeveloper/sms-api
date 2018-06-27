@@ -88,30 +88,23 @@ header("Content-Type:application/json");
         
 
        // if($user){
-        $user = array(
-								'id'=>$id, 
-								'name'=>$name, 
-								'email'=>$email,
-								'lastname'=>$lastname,
-								'mobile'=>$mobile,
-								'profile_pic'=>$profile_pic,
-								'user_gallery'=>$user_gallery,
-								'user_name'=>$user_name,
-								'real_name'=>$real_name,
-								'dob'=>$dob,
-								'description'=>$description,
-								'city'=>$city,
-								'state'=>$state,
-								'country'=>$country,
-								'gender'=>$gender,
-								'tag_format'=>$tag_format
-
-
-
-
-
-
-
+			$user = array(
+			'id'=>$id, 
+			'name'=>$name, 
+			'email'=>$email,
+			'lastname'=>$lastname,
+			'mobile'=>$mobile,
+			'profile_pic'=>$profile_pic,
+			'user_gallery'=>$user_gallery,
+			'user_name'=>$user_name,
+			'real_name'=>$real_name,
+			'dob'=>$dob,
+			'description'=>$description,
+			'city'=>$city,
+			'state'=>$state,
+			'country'=>$country,
+			'gender'=>$gender,
+			'tag_format'=>$tag_format
 
 
 							);
