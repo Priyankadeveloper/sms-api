@@ -1,0 +1,990 @@
+<?php
+include 'functions_api.php';
+$db=new functions();
+header('Access-Control-Allow-Origin: *');
+
+header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE');
+
+header('Access-Control-Allow-Headers: Origin, X-Auth-Token,Authorization, X-Requested-With, Content-Type, Accept');
+
+header('Content-type: application/json');
+$data = json_decode( file_get_contents('php://input'),true );
+$action=$data['action'];
+switch($action){
+case 'Login':
+$arrResult=Login($data);
+break;
+case 'Sigup':
+$arrResult=sigup($data);
+break;
+case 'forgot_password':
+$arrResult=forgot_password($data);
+break;
+case 'ChangePassword':
+$arrResult=ChangePassword($data);
+break;
+case 'Updateprofile':
+$arrResult=Updateprofile($data);
+break;
+case 'Updateaddress':
+$arrResult=Updateaddress($data);
+break;
+case 'Swipe':
+$arrResult=Swipe();
+break;
+case 'Create_chat_room':
+$arrResult=Create_chat_room($data);
+break;
+case 'Admin_login':
+$arrResult=Admin_login($data);
+break;
+default :
+ $arrResult = array('success' => 0, 'msg' => "No Web services Found");
+}
+$output = json_encode($arrResult);
+print_r($output);
+function Login($data)
+{
+$output=array();
+if($data['socialid']!=="")
+	{    
+     	$sq2l = "select * from users where socialid = '".$data['socialid']."'";
+		$run2 = mysql_query($sq2l);
+		$num=mysql_num_rows($run2);
+		$social_data=mysql_fetch_array($run2);
+		
+		if($num){
+		$user=array(
+		    'id'=>$social_data['id'], 
+			'name'=>$social_data['name'], 
+			'email'=>$social_data['email'],
+			'phone'=>$social_data['phone'],
+			'gender'=>$social_data['gender'],
+			'dob'=>$social_data['dob'],
+			'country_code'=>$social_data['countrycode'],
+			'profile_img'=>$social_data['profile_img'],
+			'deviceid'=>$social_data['deviceid'],
+			'devicetype'=>$social_data['devicetype'],  
+		'socialid'=>$social_data['socialid'],
+		'issocial'=>$social_data['issocial'],
+		);	
+			$output['userdetails']=$user;
+			$output['success'] = "1";
+			$output['msg'] = 'Login with Social successfull'; 
+			return $output;	
+		}
+		else{
+			 
+
+			
+			 $ins="INSERT INTO users (name,email,issocial,gender,socialid,profile_img,dob,countrycode,language,phone) VALUES ('".$data['name']."','".$data['email']."','True','".$data['gender']."','".$data['socialid']."','".$data['profile_img']."','".$data['dob']."','".$data['cunt']."','".$data['language']."','".$data['phone']."')";
+            $is_run3 = mysql_query($ins);
+			$sq2l = "select * from users where socialid = '".$data['socialid']."'";
+			$is_run4 = mysql_query($sq2l);
+			$$is_run2=mysql_fetch_array($is_run4);
+	    	$is_s=mysql_fetch_array($is_run2); 
+			$user=array(
+			'id'=>$is_s['id'], 
+			'name'=>$is_s['name'], 
+			'email'=>$is_s['email'],
+			'phone'=>$is_s['phone'],
+			'gender'=>$is_s['gender'],
+			'dob'=>$is_s['dob'],
+			'country_code'=>$is_s['countrycode'],
+			'profile_img'=>$is_s['profile_img'],
+			'deviceid'=>$is_s['deviceid'],
+			'devicetype'=>$is_s['devicetype'],  
+
+			'socialid'=>$is_s['socialid'],
+		    'issocial'=>$is_s['issocial'],
+			);
+		    $output['userdetails']=$user;
+			$output['success'] = "1";
+			$output['msg'] = 'Login with  Social id successfull'; 
+			return $output;	
+		}
+	}
+
+
+
+else if($data['phone']=='' || $data['password']== ''||$data['cunt']=='')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Fields should not be Empty";
+
+        return $output;
+
+	}
+else if($data['phone']!='' || $data['password']!= ''||$data['cunt']!="")
+{
+$sel="select * from `users` where  `phone`='".$data['phone']."' and `password`='".base64_encode($data['password'])."' and `status`=1 and `countrycode`='".$data['cunt']."'";
+
+	  $sqlquery=mysql_query($sel);
+
+	  $num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+         $row=mysql_fetch_array($sqlquery);
+		 
+			
+	       $user = array(
+								'id'=>$row['id'], 
+								'name'=>$row['name'], 
+								'email'=>$row['email'],
+								'phone'=>$row['phone'],
+								'gender'=>$row['gender'],
+								'dob'=>$row['dob'],
+								'country_code'=>$row['countrycode'],
+								'profile_img'=>$row['profile_img'],
+								'deviceid'=>$row['deviceid'],
+								'devicetype'=>$row['devicetype'],  
+							);
+							
+	 
+	
+	  $output['userdetails']=$user;
+      $output['success'] = "1";
+      $output['msg'] = 'Login successfull'; 
+      return $output;
+		}
+
+		}
+		
+		else {
+		$output['msg'] = 'something went wrong'; 	
+		return $output;
+		}
+
+}
+
+function sigup($data)
+{
+	$output=array(); 
+
+	if($data['name']=='' || $data['gender']=='' || $data['email']== '' || $data['password']== '' || $data['phone']== '' || $data['dob']== '')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Fields should not be Empty";
+
+        return $output;
+
+	}
+	
+    else 
+
+	{
+
+		$result=checkDataForemail($data);
+      
+
+		if($result['password']!='')
+
+		{
+
+			$output['success'] = "0";
+
+			$output['msg'] = "Email Or Phone no Already Exist!"; 
+
+			return $output; 
+
+		}
+
+		else
+
+		{
+
+			   $temp = explode(".", $_FILES["profilepic"]["name"]);
+
+				$newfilename = round(microtime(true)) . '.' . end($temp);
+
+				$newfile='../uploads/'.$newfilename;
+
+				if(move_uploaded_file($_FILES["profilepic"]["tmp_name"], $newfile)) 
+
+				{
+
+					 $file=$newfilename;
+
+					$filed=", `profile_img`='$file'";
+
+					
+
+				} 
+
+                 $name=$data['name'];
+                 $sin_email=$data['email'];
+				 $gender=$data['gender'];
+				 $password=base64_encode($data['password']);
+				 $phone=$data['phone'];
+				 $profile_img=$data['profile_img'];
+				 $dob=$data['dob'];
+			    
+                $ins="INSERT INTO users (name,email,password,phone,gender,profile_img,dob) VALUES ('$name','$sin_email','$password','$phone','$gender','$profile_img','$dob')";
+				
+				$sqlquery=mysql_query($ins);
+
+				
+
+				
+
+				$result=checkData($data);
+
+				$output['userdetails']=$result;
+
+				$output['success'] = "1";
+
+				$output['msg'] = "Success";
+
+				return $output;
+
+		   
+
+		}
+
+	}
+
+	
+	
+}
+function checkDataForemail($data)
+{
+
+	$sel="select * from `users` where `email`='".$data['email']."' and `phone`='".$data['phone']."'";
+
+	$sqlquery=mysql_query($sel);
+
+	$num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+
+			while($row=mysql_fetch_array($sqlquery))
+
+			{
+
+				 $sqlarray['password']=$row['password'];
+
+				 $sqlarray['name']=$row['name'];
+
+				      
+
+			}
+
+			return $sqlarray;
+
+		}
+
+}
+
+function checkData($data)
+{
+
+	  $sel="select * from `users` where  `email`='".$data['email']."' and `password`='".base64_encode($data['password'])."' and `status`=1";
+
+	  $sqlquery=mysql_query($sel);
+
+	  $num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+
+			while($row=mysql_fetch_array($sqlquery))
+
+			{
+
+				 $sqlarray['userid']=$row['id'];
+
+				 $sqlarray['name']=$row['name'];
+				 $sqlarray['email']=$row['email'];
+
+				  $sqlarray['userdob']=$row['dob'];
+
+				 $sqlarray['userphone']=$row['phone'];
+
+				 $sqlarray['country']=$row['country'];
+
+				 $sqlarray['countrycode']=$row['countrycode'];
+
+				 $sqlarray['address']=$row['address'];
+
+				 $sqlarray['pass_country']=$row['pass_country'];
+
+				 $sqlarray['pass_expry']=$row['pass_expry'];
+
+				 $sqlarray['city']=$row['city'];
+
+				 $sqlarray['postal_code']=$row['postalcode'];
+
+				 $src="https://www.webwiders.com/WEB01/findya/uploads/".$row['profile_img'];  
+
+				 $sqlarray['profilepic']=$src;
+
+				  $sqlarray['cardnumber']=$row['cardnumber'];
+
+				 $sqlarray['ccv']=$row['ccv'];
+
+				 $sqlarray['expiry_month']=$row['expiry_month'];
+
+				 $sqlarray['expiry_year']=$row['expiry_year'];
+
+				 
+
+				 
+
+				 	 
+
+				      
+
+			}
+
+			return $sqlarray;
+
+		}
+
+}
+function forgot_password($data)
+{
+  $output=array();
+
+	if($data['email']=='')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Email should not be Empty";
+
+        return $output;
+
+	}
+	else if($data['email']!='')
+
+	{
+
+		//$result=checkDataForemail_forgot($data['email']);
+        
+	$sel="select * from `users` where `email`='".$data['email']."'";
+
+	$sqlquery=mysql_query($sel);
+
+	$num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+
+			while($row=mysql_fetch_array($sqlquery))
+
+			{ 
+			$user = array(
+								'id'=>$row['id'], 
+								'name'=>$row['name'], 
+								'email'=>$row['email'],
+								'phone'=>$row['phone'],
+								'gender'=>$row['gender'],
+								'dob'=>$row['dob'],
+								'password'=>$row['password'],
+								'country_code'=>$row['countrycode'],
+								'profile_img'=>$row['profile_img'],
+								'deviceid'=>$row['deviceid'],
+								'devicetype'=>$row['devicetype'],  
+							);
+
+				 		      
+
+			}
+
+
+
+
+
+		
+
+		if($user==null)
+
+		{
+
+			$output['success'] = "0";
+
+			$output['msg'] = "Email Id does not exits!"; 
+
+			return $output; 
+
+		}
+
+		else
+
+		{
+           // echo $user['password'];
+			 $password=base64_decode($user['password']); 
+
+			  $to = $data['email'];
+
+				$from = "info@webwiders.com";
+
+				$headers = "From: Findya <info@webwiders.com>\r\n";
+
+				$headers .= "MIME-Version: 1.0\n";
+
+				$headers .= "Content-type: text/html; charset=iso-8859-1 \n";
+
+				$subject ="Findya: Password Recovery"; 
+
+				$msg = '<p style="font-family: Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif; color: rgb(237, 30, 36); font-weight: 500; font-size: 17px; margin: 0px 0px 10px;">Welcome! '.$data['email'].'</p>
+
+					<p style="font-family:Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:15px">This is an automated message . If you did not recently initiate the Forgot Password process, please disregard this email.
+
+
+
+						You indicated that you forgot your login password. We can generate a temporary password for you to log in with, then once logged in you can change your password.</p>
+
+
+
+						<p style="font-family:Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:15px"><b>Password</b>:'.$password.'</p>
+
+						<p style="font-family:Helvetica Neue,Helvetica,Arial,Lucida Grande,sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:15px">Thank You<br /> Support</p>';
+
+		    mail($to,$subject,$msg,$headers);
+
+			
+
+			
+
+			$output['success'] = "1";
+
+			$output['msg'] = "Success! Please Check Email For Password.We sent you a mail for your password recovery.";
+
+			
+
+			return $output;
+        }
+	}}
+	
+}
+function ChangePassword($data)
+{
+		$output=array();
+
+	if($data['id']=='' || $data['oldpassword']== '')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Userid and Password should not be Empty";
+
+        return $output;
+
+	}
+
+    else if($data['id']!='' || $data['oldpassword']!= '')
+
+	{
+
+		$result=checkpassword($data);
+
+		
+
+		if($result==null)
+
+		{
+
+			$output['success'] = "0";
+
+			$output['msg'] = "Old password does not matched!"; 
+
+			return $output; 
+
+		}
+
+		else
+
+		{
+
+			
+
+			$sql="update `users` set `password`='".base64_encode($data['newpass'])."' where `id`='".$data['id']."'"; 
+
+	        $sqlquery=mysql_query($sql);
+
+			$output['success'] = "1";
+
+			$output['msg'] = "Success! Password has been changed successfully.";
+
+			
+
+			return $output;
+
+		}
+
+	}
+
+		
+	
+	
+}
+function checkpassword($data)
+{
+	//echo base64_encode($data['oldpassword']); die;
+
+	$sel="select * from `users` where `id`='".$data['id']."' and `password`='".base64_encode($data['oldpassword'])."'";
+
+	$sqlquery=mysql_query($sel);
+
+	$num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+
+			while($row=mysql_fetch_array($sqlquery))
+
+			{
+
+				 $sqlarray['userid']=$row['id'];
+
+				 
+
+				      
+
+			}
+
+			return $sqlarray;
+
+		}
+
+}
+function Updateprofile($data)
+{
+		$output=array();
+
+	if($data['id']=='')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Userid  should not be Empty";
+
+        return $output;
+
+	}
+
+    else if($data['id']!='')
+
+	{
+
+		    
+
+			$sql="update `users` set `name`='".$data['name']."',`phone`='".$data['phone']."',`email`='".$data['email']."',`language`='".$data['language']."',`dob`='".$data['dob']."'";
+
+			
+
+			$temp = explode(".", $_FILES["profilepic"]["name"]);
+
+            $newfilename = round(microtime(true)) . '.' . end($temp);
+
+			$newfile='../uploads/'.$newfilename;
+
+			
+
+			
+
+			
+
+			if(move_uploaded_file($_FILES["profilepic"]["tmp_name"], $newfile)) 
+
+			{
+
+				 $file=$newfilename;
+
+				$sql.=", `profile_img`='$file'";
+
+				
+
+			}
+
+			$sql.=" where `id`='".$data['id']."'";
+
+			
+
+			$sqlquery=mysql_query($sql);
+
+			
+
+			$result=getGeneralinfo($data);
+
+			$output['success'] = "1";
+
+			$output['msg'] = "Success";
+
+			$output['userdetails'] = $result;
+
+			return $output;
+
+		
+
+	}
+
+	
+}
+function getGeneralinfo($data)
+{
+
+	$sel="select * from `users` where `id`='".$data['id']."'";
+
+	$sqlquery=mysql_query($sel);
+
+	$num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+
+			while($row=mysql_fetch_array($sqlquery))
+
+			{
+				$sqlarray['userid']=$row['id'];
+				 $sqlarray['name']=$row['name'];
+				 $sqlarray['email']=$row['email'];
+				 $sqlarray['language']=$row['language'];
+				 $sqlarray['userdob']=$row['dob'];
+				 $sqlarray['userphone']=$row['phone'];
+
+				 $sqlarray['passport']=$row['passport'];
+
+				 $sqlarray['country']=$row['country'];
+
+				 $sqlarray['countrycode']=$row['countrycode'];
+
+				 $sqlarray['pass_country']=$row['pass_country'];
+
+				 $sqlarray['pass_expry']=$row['pass_expry'];
+
+				 $sqlarray['address']=$row['address'];
+
+				 $sqlarray['city']=$row['city'];
+
+				 $sqlarray['postal_code']=$row['postalcode'];
+				 $sqlarray['profile_img']=$row['profile_img'];
+                  
+			
+				 $sqlarray['cardnumber']=$row['cardnumber'];
+
+				 $sqlarray['ccv']=$row['ccv'];
+
+				 $sqlarray['expiry_month']=$row['expiry_month'];
+
+				 $sqlarray['expiry_year']=$row['expiry_year'];
+				
+			}
+
+			
+
+			return $sqlarray;
+
+		}
+	
+	
+}
+function Updateaddress($data)
+{
+	$output=array();
+
+	if($data['id']=='')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Userid  should not be Empty";
+
+        return $output;
+
+	}
+
+    else if($data['id']!='')
+
+	{
+
+		    
+			$sql="update `users` set `address`='".$data['address']."',`city`='".$data['city']."',`state`='".$data['state']."',`pin_code`='".$data['pin_code']."'";
+
+			
+
+			$temp = explode(".", $_FILES["profilepic"]["name"]);
+
+            $newfilename = round(microtime(true)) . '.' . end($temp);
+
+			$newfile='../uploads/'.$newfilename;
+
+			
+
+		
+
+			
+
+			if(move_uploaded_file($_FILES["profilepic"]["tmp_name"], $newfile)) 
+
+			{
+
+				 $file=$newfilename;
+
+				$sql.=", `profile_img`='$file'";
+
+				
+
+			}
+
+			$sql.=" where `id`='".$data['id']."'";
+
+			
+
+			$sqlquery=mysql_query($sql);
+
+			
+
+			$result=getaddressinfo($data);
+
+			$output['success'] = "1";
+
+			$output['msg'] = "Success";
+
+			$output['userdetails'] = $result;
+
+			return $output;
+
+		
+
+	}	
+	
+}
+
+function getaddressinfo($data)
+{
+$sel="select * from `users` where `id`='".$data['id']."'";
+
+	$sqlquery=mysql_query($sel);
+
+	$num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+
+			while($row=mysql_fetch_array($sqlquery))
+
+			{
+				$sqlarray['userid']=$row['id'];
+				 $sqlarray['address']=$row['address'];
+				 $sqlarray['city']=$row['city'];
+				 $sqlarray['state']=$row['state'];
+				 $sqlarray['pin_code']=$row['pin_code'];
+				 
+				
+			}
+
+			
+
+			$output['success'] = "1";
+
+			$output['msg'] = "Success";
+
+			$output['userdetails'] = $result;
+
+			return $output;
+
+		}
+	
+	
+}
+function Swipe()
+{
+ $sel="select * from `users` where 1=1"; 
+
+	$sqlquery=mysql_query($sel);
+
+	 $num=mysql_num_rows($sqlquery); 
+
+		if($num){
+			$user = array();
+			while($row=mysql_fetch_array($sqlquery))
+             
+			{  
+ //print_r($row);			
+			    $user[] = array(
+								'id'=>$row['id'], 
+								'name'=>$row['name'], 
+								'email'=>$row['email'],
+								'phone'=>$row['phone'],
+								'gender'=>$row['gender'],
+								'dob'=>$row['dob'],
+								'country_code'=>$row['countrycode'],
+								'profile_img'=>$row['profile_img'],
+								'deviceid'=>$row['deviceid'],
+								'devicetype'=>$row['devicetype']  
+							);
+			
+							 
+				
+			}
+
+			
+
+			$output['success'] = "1";
+
+			$output['msg'] = "Success";
+
+			$output['userdetails'] = $user;
+
+			return $output;
+
+		}
+		else
+		{
+			//echo 'failed';
+		}
+	
+}
+function Create_chat_room($data)
+{
+	$output=array(); 
+
+	if($data['ch_name']=='' || $data['ch_shop_l']=='' || $data['ch_wifi_name']== '' || $data['ch_ip']== ''||$data['ch_wifi_psw']==''||$data['ch_lat']==''||$data['ch_long']==''||$data['ch_user_id']=='')
+
+	{
+
+		$output['success'] = 0;
+
+        $output['msg'] = "Fields should not be Empty";
+
+        return $output;
+
+	}
+	
+  
+		else
+
+		{
+
+			   $temp = explode(".", $_FILES["profilepic"]["name"]);
+
+				$newfilename = round(microtime(true)) . '.' . end($temp);
+
+				$newfile='../uploads/'.$newfilename;
+
+				if(move_uploaded_file($_FILES["profilepic"]["tmp_name"], $newfile)) 
+
+				{
+
+					 $file=$newfilename;
+
+					$filed=", `profile_img`='$file'";
+
+					
+
+				} 
+
+                 $name=$data['ch_name']; 
+                 $shop=$data['ch_shop_l'];
+				 $wifi=$data['ch_wifi_name'];
+				 $pin=$data['ch_ip'];
+				 $ch_wifi_psw=$data['ch_wifi_psw'];
+				 $ch_long = $data['ch_long'];
+				 $ch_lat = $data['ch_lat'];
+				 $ch_user_id=$data['ch_user_id'];
+				 
+                $ins="INSERT INTO Create_chat_room (ch_name,ch_shop_l,ch_wifi_name,ch_ip,ch_wifi_psw,ch_img,ch_lat,ch_long,ch_user_id) VALUES ('$name','$shop','$wifi','$pin','$ch_wifi_psw','$filed','$ch_long','$ch_long','$ch_user_id')";
+				
+				$sqlquery=mysql_query($ins);
+                
+				$num=mysql_num_rows($sqlquery); 
+                $chat_c="select * from Create_chat_room where ch_ip='".$data['ch_ip']."'";
+				$sqlquery_value=mysql_query($chat_c);
+				while($row=mysql_fetch_array($sqlquery_value)){
+				$chat_list=array(
+				'chat_room_name'=>$row['ch_name'],
+				'ch_shop_l'=>$row['ch_shop_l'],
+				'ch_wifi_name'=>$row['ch_wifi_name'],
+				'ch_ip'=>$row['ch_ip'],
+				'ch_wifi_psw'=>$row['ch_wifi_psw'],
+				'ch_lat'=>$row['ch_lat'],
+				'ch_long'=>$row['ch_long'],
+				'ch_user_id'=>$row['ch_user_id'],
+							);
+
+				}
+
+				//$result=checkData($data);
+
+				$output['userdetails']=$chat_list;
+
+				$output['success'] = "1";
+
+				$output['msg'] = "Success";
+
+				return $output;
+
+		   
+
+		}
+
+	
+
+}
+function Admin_login($data)
+{
+$sel="select * from `admin` where  `a_email`='".$data['email']."' and `a_psw`='".base64_encode($data['password'])."'";
+
+	  $sqlquery=mysql_query($sel);
+
+	  $num=mysql_num_rows($sqlquery); 
+
+		if($num==1){
+         $row=mysql_fetch_array($sqlquery);
+		 
+			
+	       $user = array(
+								'id'=>$row['a_id'], 
+								'name'=>$row['a_name'], 
+								'email'=>$row['a_email'],
+								);
+							
+	 
+	
+	  $output['admindetails']=$user;
+      $output['success'] = "1";
+      $output['msg'] = 'Login successfull'; 
+      return $output;
+		}
+
+	
+		
+		else {
+		$output['msg'] = 'Please Fill Correct login Detail'; 	
+		return $output;
+		}
+
+}
+
+
+
+?> 
+-------------------------------------------------------------------------------------------------------------------------------------
+<?php
+ define('DbHost', 'localhost');  
+  define('DbUser', '');   
+  define('DbPass', '');    
+  define('DbName', '');
+class functions{
+	function __construct()
+    {
+        session_start();
+        mysql_connect(DbHost, DbUser, DbPass) or die('Could not connect: ' . mysql_error());
+        mysql_select_db(DbName) or die('Could not connect: ' . mysql_error());
+		date_default_timezone_set('Asia/Kolkata');
+    }
+    function query($q)
+    {
+        $sqlquery = mysql_query($q);
+        return $sqlquery;
+    }
+   
+}
+?>
